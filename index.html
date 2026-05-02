@@ -12,7 +12,6 @@
 
 <input id="nombre" placeholder="Nombre">
 <input id="edad" placeholder="Edad">
-
 <button onclick="guardar()">Guardar mascota</button>
 
 <hr>
@@ -22,21 +21,21 @@
 
 <input id="nombreVacuna" placeholder="Nombre mascota">
 <input id="vacuna" placeholder="Vacuna">
-
 <button onclick="agregarVacuna()">Agregar vacuna</button>
 
 <hr>
 
 <!-- Mascotas -->
-<h2> Mascotas:</h2>
+<h2> Mascotas</h2>
 <ul id="lista"></ul>
 
 <!-- Recordatorios -->
-<h2> Recordatorios</h2>
+<h2>⚠ Recordatorios</h2>
 <ul id="alertas"></ul>
 
 <script>
-const API = "http://192.168.1.8:5000"; 
+
+const API = window.location.origin;
 
 async function guardar() {
     const nombre = document.getElementById("nombre").value;
@@ -79,7 +78,7 @@ async function cargar() {
         if (m.vacunas.length > 0) {
             texto += " | Vacunas: ";
             m.vacunas.forEach(v => {
-                texto += v.vacuna + " (próxima: " + v.proxima + ") ";
+                texto += v.vacuna + " (próx: " + v.proxima + ") ";
             });
         }
 
@@ -105,6 +104,7 @@ async function cargarAlertas() {
 }
 
 cargar();
+
 </script>
 
 </body>
