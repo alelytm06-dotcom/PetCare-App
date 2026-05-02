@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PetCare</title>
+</head>
+<body>
+
+<h1> PetCare</h1>
+
+<!-- Crear mascota -->
+<h2>Crear mascota</h2>
+
+<input id="nombre" placeholder="Nombre">
+<input id="edad" placeholder="Edad">
+
+<button onclick="guardar()">Guardar mascota</button>
+
+<hr>
+
+<!-- Vacunas -->
+<h2> Agregar vacuna</h2>
+
+<input id="nombreVacuna" placeholder="Nombre mascota">
+<input id="vacuna" placeholder="Vacuna">
+
+<button onclick="agregarVacuna()">Agregar vacuna</button>
+
+<hr>
+
+<!-- Mascotas -->
+<h2> Mascotas:</h2>
+<ul id="lista"></ul>
+
+<!-- Recordatorios -->
+<h2> Recordatorios</h2>
+<ul id="alertas"></ul>
+
+<script>
+const API = "http://192.168.1.8:5000"; 
+
+async function guardar() {
+    const nombre = document.getElementById("nombre").value;
+    const edad = document.getElementById("edad").value;
+
+    await fetch(API + "/mascotas", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ nombre, edad })
+    });
+
+    cargar();
+}
+
+async function agregarVacuna() {
+    const nombre = document.getElementById("nombreVacuna").value;
+    const vacuna = document.getElementById("vacuna").value;
+
+    await fetch(API + "/vacunas", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ nombre, vacuna })
+    });
+
+    cargar();
+}
+
+async function cargar() {
+    const res = await fetch(API + "/mascotas");
+    const data = await res.json();
+
+    const lista = document.getElementById("lista");
+    lista.innerHTML = "";
+
+    data.forEach(m => {
+        const li = document.createElement("li");
+
+        let texto = m.nombre + " - " + m.edad;
+
+        if (m.vacunas.length > 0) {
+            texto += " | Vacunas: ";
+            m.vacunas.forEach(v => {
+                texto += v.vacuna + " (próxima: " + v.proxima + ") ";
+            });
+        }
+
+        li.textContent = texto;
+        lista.appendChild(li);
+    });
+
+    cargarAlertas();
+}
+
+async function cargarAlertas() {
+    const res = await fetch(API + "/recordatorios");
+    const data = await res.json();
+
+    const lista = document.getElementById("alertas");
+    lista.innerHTML = "";
+
+    data.forEach(a => {
+        const li = document.createElement("li");
+        li.textContent = a.mascota + " - " + a.vacuna + " (" + a.estado + ")";
+        lista.appendChild(li);
+    });
+}
+
+cargar();
+</script>
+
+</body>
+</html>
