@@ -1,50 +1,42 @@
-from flask import Flask, request, jsonify, session
+from flask import Flask, request, jsonify, session, render_template
 from flask_cors import CORS
 import sqlite3
 import os
 
-app = Flask(__name__)
-app.secret_key = "clave_secreta"
+app = Flask(__name__, template_folder="templates")
+app.secret_key = "clave_super_secreta"
 CORS(app)
 
-# ---------------- DATABASE ----------------
+# ---------------- DB ----------------
 def init_db():
     conn = sqlite3.connect("petcare.db")
     c = conn.cursor()
 
-    c.execute("""
-    CREATE TABLE IF NOT EXISTS users (
+    c.execute("""CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         username TEXT UNIQUE,
         password TEXT
-    )
-    """)
+    )""")
 
-    c.execute("""
-    CREATE TABLE IF NOT EXISTS mascotas (
+    c.execute("""CREATE TABLE IF NOT EXISTS mascotas (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user TEXT,
         nombre TEXT,
         edad TEXT,
         raza TEXT
-    )
-    """)
-
-    c.execute("""
-    CREATE TABLE IF NOT EXISTS vacunas (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        mascota_id INTEGER,
-        vacuna TEXT,
-        fecha TEXT
-    )
-    """)
+    )""")
 
     conn.commit()
     conn.close()
 
 init_db()
 
-# ---------------- USER LOGIN SIMPLE ----------------
+# ---------------- FRONTEND ----------------
+@app.route("/")
+def home():
+    return render_template("index.html")
+
+# ---------------- REGISTER ----------------
 @app.route("/register", methods=["POST"])
 def register():
     data = request.json
@@ -61,7 +53,7 @@ def register():
     finally:
         conn.close()
 
-
+# ---------------- LOGIN ----------------
 @app.route("/login", methods=["POST"])
 def login():
     data = request.json
@@ -77,11 +69,12 @@ def login():
     if user:
         session["user"] = data["username"]
         return {"msg": "logueado"}
+
     return {"error": "credenciales inválidas"}
 
-# ---------------- MASCOTAS ----------------
+# ---------------- CREAR MASCOTA ----------------
 @app.route("/mascotas", methods=["POST"])
-def crear_mascota():
+def crear():
     if "user" not in session:
         return {"error": "no autorizado"}, 403
 
@@ -95,11 +88,11 @@ def crear_mascota():
     conn.commit()
     conn.close()
 
-    return {"msg": "mascota creada"}
+    return {"msg": "creado"}
 
-
+# ---------------- LISTAR ----------------
 @app.route("/mascotas", methods=["GET"])
-def get_mascotas():
+def listar():
     if "user" not in session:
         return {"error": "no autorizado"}, 403
 
@@ -109,37 +102,24 @@ def get_mascotas():
     c.execute("SELECT * FROM mascotas WHERE user=?",
               (session["user"],))
 
-    mascotas = c.fetchall()
+    data = c.fetchall()
     conn.close()
 
-    return jsonify(mascotas)
+    return jsonify(data)
 
-# ---------------- VACUNAS ----------------
-@app.route("/vacunas", methods=["POST"])
-def add_vacuna():
-    data = request.json
-
-    conn = sqlite3.connect("petcare.db")
-    c = conn.cursor()
-
-    c.execute("INSERT INTO vacunas (mascota_id, vacuna, fecha) VALUES (?, ?, ?)",
-              (data["mascota_id"], data["vacuna"], data["fecha"]))
-
-    conn.commit()
-    conn.close()
-
-    return {"msg": "vacuna agregada"}
-
-# ---------------- EDITAR MASCOTA ----------------
+# ---------------- EDITAR ----------------
 @app.route("/editar", methods=["PUT"])
 def editar():
+    if "user" not in session:
+        return {"error": "no autorizado"}, 403
+
     data = request.json
 
     conn = sqlite3.connect("petcare.db")
     c = conn.cursor()
 
     c.execute("""
-        UPDATE mascotas 
+        UPDATE mascotas
         SET nombre=?, edad=?, raza=?
         WHERE id=? AND user=?
     """, (data["nombre"], data["edad"], data["raza"], data["id"], session["user"]))
@@ -151,4 +131,5 @@ def editar():
 
 # ---------------- RUN ----------------
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
