@@ -8,15 +8,17 @@ CORS(app)
 
 mascotas = []
 
+# Página principal
 @app.route("/")
 def home():
     return send_from_directory("", "index.html")
 
+# Crear mascota
 @app.route("/mascotas", methods=["POST"])
 def agregar_mascota():
     data = request.json
 
-    if "nombre" not in data or "edad" not in data:
+    if "nombre" not in data or "edad" not in data or "raza" not in data:
         return {"error": "Datos incompletos"}, 400
 
     data["vacunas"] = []
@@ -24,10 +26,12 @@ def agregar_mascota():
 
     return {"mensaje": "Mascota creada"}
 
+# Ver mascotas
 @app.route("/mascotas", methods=["GET"])
 def ver_mascotas():
     return jsonify(mascotas)
 
+# Agregar vacuna
 @app.route("/vacunas", methods=["POST"])
 def agregar_vacuna():
     data = request.json
@@ -51,6 +55,26 @@ def agregar_vacuna():
 
     return {"error": "Mascota no encontrada"}, 404
 
+# Editar mascota
+@app.route("/editar_mascota", methods=["PUT"])
+def editar_mascota():
+    data = request.json
+
+    nombre_actual = data["nombre_actual"]
+    nuevo_nombre = data["nuevo_nombre"]
+    nueva_edad = data["nueva_edad"]
+    nueva_raza = data["nueva_raza"]
+
+    for m in mascotas:
+        if m["nombre"] == nombre_actual:
+            m["nombre"] = nuevo_nombre
+            m["edad"] = nueva_edad
+            m["raza"] = nueva_raza
+            return {"mensaje": "Mascota actualizada"}
+
+    return {"error": "Mascota no encontrada"}, 404
+
+# Recordatorios
 @app.route("/recordatorios", methods=["GET"])
 def recordatorios():
     hoy = datetime.now()
@@ -69,6 +93,7 @@ def recordatorios():
 
     return jsonify(alertas)
 
+# Render
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
