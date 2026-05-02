@@ -11,18 +11,23 @@
 <h2>Login</h2>
 <input id="user" placeholder="usuario">
 <input id="pass" placeholder="contraseña">
+
 <button onclick="login()">Login</button>
 <button onclick="register()">Registro</button>
 
 <hr>
 
-<!-- MASCOTAS -->
+<!-- MASCOTA -->
 <h2>Crear mascota</h2>
 <input id="nombre" placeholder="nombre">
 <input id="edad" placeholder="edad">
 <input id="raza" placeholder="raza">
+
 <button onclick="crear()">Crear</button>
 
+<hr>
+
+<!-- LISTA -->
 <h2>Mis mascotas</h2>
 <ul id="lista"></ul>
 
@@ -30,34 +35,35 @@
 
 const API = window.location.origin;
 
-// LOGIN
-async function login(){
-    await fetch(API+"/login", {
+// REGISTER
+async function register(){
+    await fetch(API+"/register",{
         method:"POST",
         headers:{"Content-Type":"application/json"},
         body:JSON.stringify({
-            username: user.value,
-            password: pass.value
+            username:user.value,
+            password:pass.value
         })
     })
+}
+
+// LOGIN
+async function login(){
+    await fetch(API+"/login",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+            username:user.value,
+            password:pass.value
+        })
+    })
+
     cargar();
 }
 
-// REGISTER
-async function register(){
-    await fetch(API+"/register", {
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({
-            username: user.value,
-            password: pass.value
-        })
-    })
-}
-
-// CREAR MASCOTA
+// CREAR
 async function crear(){
-    await fetch(API+"/mascotas", {
+    await fetch(API+"/mascotas",{
         method:"POST",
         headers:{"Content-Type":"application/json"},
         body:JSON.stringify({
@@ -66,6 +72,7 @@ async function crear(){
             raza:raza.value
         })
     })
+
     cargar();
 }
 
@@ -78,7 +85,9 @@ async function cargar(){
 
     data.forEach(m=>{
         let li = document.createElement("li");
+
         li.textContent = m[2]+" - "+m[3]+" - "+m[4];
+
         lista.appendChild(li);
     });
 }
