@@ -1,146 +1,84 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>PetCare</title>
+    <title>PetCare PRO</title>
 </head>
 <body>
 
-<h1>🐶 PetCare</h1>
+<h1>🐶 PetCare PRO</h1>
 
-<!-- CREAR MASCOTA -->
+<!-- LOGIN -->
+<h2>Login</h2>
+<input id="user" placeholder="usuario">
+<input id="pass" placeholder="contraseña">
+<button onclick="login()">Login</button>
+<button onclick="register()">Registro</button>
+
+<hr>
+
+<!-- MASCOTAS -->
 <h2>Crear mascota</h2>
+<input id="nombre" placeholder="nombre">
+<input id="edad" placeholder="edad">
+<input id="raza" placeholder="raza">
+<button onclick="crear()">Crear</button>
 
-<input id="nombre" placeholder="Nombre">
-<input id="edad" placeholder="Edad">
-<input id="raza" placeholder="Raza">
-
-<button onclick="guardar()">Guardar mascota</button>
-
-<hr>
-
-<!-- VACUNAS -->
-<h2>💉 Agregar vacuna</h2>
-
-<input id="nombreVacuna" placeholder="Nombre mascota">
-<input id="vacuna" placeholder="Vacuna">
-
-<button onclick="agregarVacuna()">Agregar vacuna</button>
-
-<hr>
-
-<!-- EDITAR -->
-<h2>✏️ Editar mascota</h2>
-
-<input id="edit_actual" placeholder="Nombre actual">
-<input id="edit_nuevo" placeholder="Nuevo nombre">
-<input id="edit_edad" placeholder="Nueva edad">
-<input id="edit_raza" placeholder="Nueva raza">
-
-<button onclick="editarMascota()">Editar mascota</button>
-
-<hr>
-
-<!-- LISTA -->
-<h2>🐾 Mascotas</h2>
+<h2>Mis mascotas</h2>
 <ul id="lista"></ul>
-
-<!-- ALERTAS -->
-<h2>⚠️ Recordatorios</h2>
-<ul id="alertas"></ul>
 
 <script>
 
-// 🔥 conexión automática con Render
 const API = window.location.origin;
 
-// CREAR MASCOTA
-async function guardar() {
-    const nombre = document.getElementById("nombre").value;
-    const edad = document.getElementById("edad").value;
-    const raza = document.getElementById("raza").value;
-
-    await fetch(API + "/mascotas", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({ nombre, edad, raza })
-    });
-
-    cargar();
-}
-
-// AGREGAR VACUNA
-async function agregarVacuna() {
-    const nombre = document.getElementById("nombreVacuna").value;
-    const vacuna = document.getElementById("vacuna").value;
-
-    await fetch(API + "/vacunas", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({ nombre, vacuna })
-    });
-
-    cargar();
-}
-
-// EDITAR MASCOTA
-async function editarMascota() {
-    const nombre_actual = document.getElementById("edit_actual").value;
-    const nuevo_nombre = document.getElementById("edit_nuevo").value;
-    const nueva_edad = document.getElementById("edit_edad").value;
-    const nueva_raza = document.getElementById("edit_raza").value;
-
-    await fetch(API + "/editar_mascota", {
-        method: "PUT",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({
-            nombre_actual,
-            nuevo_nombre,
-            nueva_edad,
-            nueva_raza
+// LOGIN
+async function login(){
+    await fetch(API+"/login", {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+            username: user.value,
+            password: pass.value
         })
-    });
-
+    })
     cargar();
 }
 
-// CARGAR MASCOTAS
-async function cargar() {
-    const res = await fetch(API + "/mascotas");
-    const data = await res.json();
-
-    const lista = document.getElementById("lista");
-    lista.innerHTML = "";
-
-    data.forEach(m => {
-        const li = document.createElement("li");
-
-        let texto = m.nombre + " - " + m.edad + " - " + m.raza;
-
-        if (m.vacunas.length > 0) {
-            texto += " | Vacunas: ";
-            m.vacunas.forEach(v => {
-                texto += v.vacuna + " (próx: " + v.proxima + ") ";
-            });
-        }
-
-        li.textContent = texto;
-        lista.appendChild(li);
-    });
-
-    cargarAlertas();
+// REGISTER
+async function register(){
+    await fetch(API+"/register", {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+            username: user.value,
+            password: pass.value
+        })
+    })
 }
 
-// ALERTAS
-async function cargarAlertas() {
-    const res = await fetch(API + "/recordatorios");
+// CREAR MASCOTA
+async function crear(){
+    await fetch(API+"/mascotas", {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+            nombre:nombre.value,
+            edad:edad.value,
+            raza:raza.value
+        })
+    })
+    cargar();
+}
+
+// LISTAR
+async function cargar(){
+    const res = await fetch(API+"/mascotas");
     const data = await res.json();
 
-    const lista = document.getElementById("alertas");
-    lista.innerHTML = "";
+    lista.innerHTML="";
 
-    data.forEach(a => {
-        const li = document.createElement("li");
-        li.textContent = a.mascota + " - " + a.vacuna + " (" + a.estado + ")";
+    data.forEach(m=>{
+        let li = document.createElement("li");
+        li.textContent = m[2]+" - "+m[3]+" - "+m[4];
         lista.appendChild(li);
     });
 }
