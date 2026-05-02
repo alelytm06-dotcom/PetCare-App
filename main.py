@@ -1,18 +1,17 @@
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from datetime import datetime, timedelta
+import os
 
 app = Flask(__name__)
 CORS(app)
 
 mascotas = []
 
-# Página principal
 @app.route("/")
 def home():
     return send_from_directory("", "index.html")
 
-# Crear mascota
 @app.route("/mascotas", methods=["POST"])
 def agregar_mascota():
     data = request.json
@@ -25,12 +24,10 @@ def agregar_mascota():
 
     return {"mensaje": "Mascota creada"}
 
-# Ver mascotas
 @app.route("/mascotas", methods=["GET"])
 def ver_mascotas():
     return jsonify(mascotas)
 
-# Agregar vacuna
 @app.route("/vacunas", methods=["POST"])
 def agregar_vacuna():
     data = request.json
@@ -54,7 +51,6 @@ def agregar_vacuna():
 
     return {"error": "Mascota no encontrada"}, 404
 
-# Recordatorios
 @app.route("/recordatorios", methods=["GET"])
 def recordatorios():
     hoy = datetime.now()
@@ -72,8 +68,6 @@ def recordatorios():
                 })
 
     return jsonify(alertas)
-
-import os
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
